@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件管理 - 管理员</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ios-blue: #007AFF;
+            --ios-green: #34C759;
+            --ios-orange: #FF9500;
+            --ios-red: #FF3B30;
+            --ios-gray: #8E8E93;
+            --ios-light-gray: #F2F2F7;
+            --ios-divider: #C6C6C8;
+            --ios-text-primary: #000000;
+            --ios-text-secondary: #8E8E93;
+            --ios-background: #FFFFFF;
+            --ios-surface: #F9F9F9;
+            --ios-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --ios-radius: 12px;
+        }
+
+        body {
+            background-color: var(--ios-surface);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            color: var(--ios-text-primary);
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+        }
+
+        .admin-container {
+            display: none;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--ios-radius);
+            box-shadow: var(--ios-shadow);
+            background: var(--ios-background);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--ios-divider);
+            font-weight: 600;
+        }
+
+        .file-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-radius: var(--ios-radius);
+            box-shadow: var(--ios-shadow);
+            background: var(--ios-background);
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--ios-blue) 0%, #5856D6 100%);
+            color: white;
+            border-radius: var(--ios-radius);
+            box-shadow: var(--ios-shadow);
+        }
+
+        .trend-up { color: var(--ios-green); }
+        .trend-down { color: var(--ios-red); }
+        .trend-stable { color: var(--ios-gray); }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-primary {
+            background: var(--ios-blue);
+        }
+
+        .btn-primary:hover {
+            background: #0066CC;
+        }
+
+        .btn-success {
+            background: var(--ios-green);
+        }
+
+        .btn-success:hover {
+            background: #2DB854;
+        }
+
+        .btn-danger {
+            background: var(--ios-red);
+        }
+
+        .btn-danger:hover {
+            background: #E6352A;
+        }
+
+        .btn-warning {
+            background: var(--ios-orange);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #E68A00;
+        }
+
+        .btn-outline-primary {
+            border: 1.5px solid var(--ios-blue);
+            color: var(--ios-blue);
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--ios-blue);
+            color: white;
+        }
+
+        .btn-outline-secondary {
+            border: 1.5px solid var(--ios-gray);
+            color: var(--ios-gray);
+            background: transparent;
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--ios-gray);
+            color: white;
+        }
+
+        .btn-outline-info {
+            border: 1.5px solid #5AC8FA;
+            color: #5AC8FA;
+            background: transparent;
+        }
+
+        .btn-outline-info:hover {
+            background: #5AC8FA;
+            color: white;
+        }
+
+        .navbar {
+            background: var(--ios-background);
+            box-shadow: 0 1px 0 var(--ios-divider);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .navbar-dark .navbar-nav .nav-link {
+            color: var(--ios-text-primary);
+            font-weight: 500;
+        }
+
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: var(--ios-blue);
+        }
+
+        .modal-content {
+            border-radius: var(--ios-radius);
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--ios-divider);
+            font-weight: 600;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--ios-divider);
+        }
+
+        .form-control {
+            border-radius: 10px;
+            border: 1.5px solid var(--ios-divider);
+            padding: 12px 16px;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-select {
+            border-radius: 10px;
+            border: 1.5px solid var(--ios-divider);
+            padding: 12px 16px;
+        }
+
+        .form-select:focus {
+            border-color: var(--ios-blue);
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+        }
+
+        .breadcrumb {
+            background: var(--ios-light-gray);
+            border-radius: var(--ios-radius);
+            padding: 12px 20px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--ios-blue);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--ios-text-primary);
+            font-weight: 500;
+        }
+
+        h2, h5, h6 {
+            font-weight: 600;
+        }
+
+        .card-title {
+            font-weight: 600;
+        }
+
+        .card-text {
+            color: var(--ios-text-secondary);
+        }
+
+        .table {
+            background: var(--ios-background);
+            border-radius: var(--ios-radius);
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background: var(--ios-light-gray);
+            font-weight: 600;
+            border: none;
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid var(--ios-divider);
+        }
+
+        .table tbody tr:hover {
+            background: var(--ios-light-gray);
+        }
+    </style>
+</head>
+<body>
+    <div id="loginSection" class="login-container">
+        <div class="card shadow">
+            <div class="card-header text-center py-4">
+                <h5 class="card-title mb-0" style="font-size: 24px;">管理员登录</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <label for="password" class="form-label" style="font-weight: 500;">密码</label>
+                    <input type="password" class="form-control" id="password" placeholder="请输入管理员密码">
+                </div>
+                <button onclick="login()" class="btn btn-primary w-100 py-3" style="font-size: 16px;">登录</button>
+                <div id="loginError" class="text-danger mt-3 text-center" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminSection" class="admin-container">
+        <nav class="navbar navbar-expand-lg mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#" style="font-weight: 600; font-size: 20px;">文件管理系统</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showFiles()">文件列表</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showUpload()">上传文件</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showPublicFiles()">公共文件</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showServerFiles()">服务器文件</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showExtensionConfig()">后缀配置</a>
+                        </li>
+                    </ul>
+                    <button onclick="logout()" class="btn btn-outline-primary btn-sm px-4">退出</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div id="filesSection" class="section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 style="font-weight: 600;">文件列表</h2>
+                    <button onclick="showUpload()" class="btn btn-primary">上传文件</button>
+                </div>
+                <div id="filesList" class="row g-3"></div>
+            </div>
+
+            <div id="uploadSection" class="section" style="display: none;">
+                <h2 style="font-weight: 600; margin-bottom: 24px;">上传文件</h2>
+                <div class="card">
+                    <div class="card-body p-4">
+                        <div class="mb-4">
+                            <label for="fileInput" class="form-label" style="font-weight: 500;">选择文件</label>
+                            <input type="file" class="form-control" id="fileInput">
+                        </div>
+                        <div class="mb-4">
+                            <label for="uploadPath" class="form-label" style="font-weight: 500;">上传路径（可选，留空则使用默认路径）</label>
+                            <input type="text" class="form-control" id="uploadPath" placeholder="/var/www/uploads 或 ./custom/path">
+                        </div>
+                        <button onclick="uploadFile()" class="btn btn-success px-5">上传</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="publicFilesSection" class="section" style="display: none;">
+                <h2 style="font-weight: 600; margin-bottom: 24px;">公共文件</h2>
+                <div id="publicFilesList" class="row g-3"></div>
+            </div>
+
+            <div id="serverFilesSection" class="section" style="display: none;">
+                <h2 style="font-weight: 600; margin-bottom: 24px;">服务器文件管理</h2>
+                <div class="card mb-4">
+                    <div class="card-body p-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="serverPathInput" placeholder="输入服务器目录路径（如 /www/wwwroot/file-manager/uploads）" value="/www/wwwroot/file-manager/uploads">
+                            <button onclick="browseServerPath()" class="btn btn-primary px-4">浏览</button>
+                        </div>
+                    </div>
+                </div>
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb" id="pathBreadcrumb"></ol>
+                </nav>
+                <div id="serverFilesList" class="row g-3"></div>
+            </div>
+
+            <div id="extensionConfigSection" class="section" style="display: none;">
+                <h2 style="font-weight: 600; margin-bottom: 24px;">后缀配置管理</h2>
+                
+                <div class="card mb-4">
+                    <div class="card-header" style="font-weight: 600;">默认配置</div>
+                    <div class="card-body p-4">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" style="font-weight: 500;">处理类型</label>
+                                <select class="form-select" id="defaultType">
+                                    <option value="file">默认文件</option>
+                                    <option value="redirect">跳转链接</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" style="font-weight: 500;">处理值</label>
+                                <input type="text" class="form-control" id="defaultValue" placeholder="文件路径或URL">
+                            </div>
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <button onclick="updateDefaultConfig()" class="btn btn-primary w-100">更新</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center" style="font-weight: 600;">
+                        <span>后缀配置列表</span>
+                        <button onclick="showAddExtensionModal()" class="btn btn-success btn-sm">添加后缀</button>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>后缀</th>
+                                        <th>类型</th>
+                                        <th>处理值</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="extensionList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statisticsModal" class="modal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">访问统计</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="statisticsContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editModal" class="modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">编辑文件</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="editFileId">
+                            <div class="mb-3">
+                                <label for="editOriginalName" class="form-label">文件名</label>
+                                <input type="text" class="form-control" id="editOriginalName">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editIsPublic" class="form-label">公共访问</label>
+                                <select class="form-select" id="editIsPublic">
+                                    <option value="false">否</option>
+                                    <option value="true">是</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPublicPath" class="form-label">公共访问路径</label>
+                                <input type="text" class="form-control" id="editPublicPath" placeholder="/public/my-file">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="saveFileEdit()">保存</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="registerModal" class="modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">注册服务器文件</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="registerFilePath">
+                            <div class="mb-3">
+                                <label for="registerFileName" class="form-label">文件名</label>
+                                <input type="text" class="form-control" id="registerFileName" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerIsPublic" class="form-label">公共访问</label>
+                                <select class="form-select" id="registerIsPublic">
+                                    <option value="false">否</option>
+                                    <option value="true">是</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="registerPublicPath" class="form-label">公共访问路径</label>
+                                <input type="text" class="form-control" id="registerPublicPath" placeholder="/public/my-file">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="registerServerFile()">注册</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="batchSetAccessModal" class="modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">批量设置文件夹访问性</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" id="batchFolderPath">
+                            <div class="mb-3">
+                                <label for="batchFolderName" class="form-label">文件夹名称</label>
+                                <input type="text" class="form-control" id="batchFolderName" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="batchIsPublic" class="form-label">公共访问</label>
+                                <select class="form-select" id="batchIsPublic">
+                                    <option value="false">否</option>
+                                    <option value="true">是</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="batchPublicPathPrefix" class="form-label">公共访问路径前缀</label>
+                                <input type="text" class="form-control" id="batchPublicPathPrefix" placeholder="/public/my-folder">
+                                <small class="text-muted">文件夹内的文件将使用此路径前缀，例如 /public/my-folder/file.jpg</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="batchRecursive" class="form-label">处理子文件夹</label>
+                                <select class="form-select" id="batchRecursive">
+                                    <option value="true">是（递归处理所有子文件夹和文件）</option>
+                                    <option value="false">否（仅处理当前文件夹）</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="batchOverwrite" class="form-label">覆盖已注册文件</label>
+                                <select class="form-select" id="batchOverwrite">
+                                    <option value="false">否（跳过已注册的文件）</option>
+                                    <option value="true">是（覆盖已注册文件的访问设置）</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="batchSetAccess()">批量设置</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="addExtensionModal" class="modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">添加后缀配置</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="addExtension" class="form-label">文件后缀</label>
+                                <input type="text" class="form-control" id="addExtension" placeholder="例如：html, jpg, pdf">
+                                <small class="text-muted">不需要输入点号，例如输入 html</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addExtensionType" class="form-label">处理类型</label>
+                                <select class="form-select" id="addExtensionType">
+                                    <option value="file">默认文件</option>
+                                    <option value="redirect">跳转链接</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="addExtensionValue" class="form-label">处理值</label>
+                                <input type="text" class="form-control" id="addExtensionValue" placeholder="文件路径或URL">
+                                <small class="text-muted">如果是文件，输入相对路径；如果是跳转，输入完整URL</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="addExtension()">添加</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let authToken = localStorage.getItem('authToken');
+        let editModal, statisticsModal;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            statisticsModal = new bootstrap.Modal(document.getElementById('statisticsModal'));
+            registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+            batchSetAccessModal = new bootstrap.Modal(document.getElementById('batchSetAccessModal'));
+            addExtensionModal = new bootstrap.Modal(document.getElementById('addExtensionModal'));
+            checkAuth();
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/admin/check', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                if (data.authenticated) {
+                    showAdmin();
+                } else {
+                    showLogin();
+                }
+            } catch (error) {
+                showLogin();
+            }
+        }
+
+        async function login() {
+            const password = document.getElementById('password').value;
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    showAdmin();
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('登录失败，请重试');
+            }
+        }
+
+        async function logout() {
+            await fetch('/api/admin/logout', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            authToken = null;
+            localStorage.removeItem('authToken');
+            showLogin();
+        }
+
+        function showLogin() {
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('adminSection').style.display = 'none';
+        }
+
+        function showAdmin() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('adminSection').style.display = 'block';
+            showFiles();
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showFiles() {
+            hideAllSections();
+            document.getElementById('filesSection').style.display = 'block';
+            loadFiles();
+        }
+
+        function showUpload() {
+            hideAllSections();
+            document.getElementById('uploadSection').style.display = 'block';
+        }
+
+        function showPublicFiles() {
+            hideAllSections();
+            document.getElementById('publicFilesSection').style.display = 'block';
+            loadPublicFiles();
+        }
+
+        function showServerFiles() {
+            hideAllSections();
+            document.getElementById('serverFilesSection').style.display = 'block';
+            browseServerPath();
+        }
+
+        function showExtensionConfig() {
+            hideAllSections();
+            document.getElementById('extensionConfigSection').style.display = 'block';
+            loadExtensionConfig();
+        }
+
+        function hideAllSections() {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+        }
+
+        async function loadFiles() {
+            try {
+                const response = await fetch('/api/admin/files', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                renderFiles(data.files, 'filesList');
+            } catch (error) {
+                console.error('加载文件失败:', error);
+            }
+        }
+
+        async function loadPublicFiles() {
+            try {
+                const response = await fetch('/api/admin/public-files', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                renderFiles(data.files, 'publicFilesList', true);
+            } catch (error) {
+                console.error('加载公共文件失败:', error);
+            }
+        }
+
+        function renderFiles(files, containerId, isPublic = false) {
+            const container = document.getElementById(containerId);
+            if (files.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted py-5">暂无文件</div>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card file-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate mb-3" title="${file.originalName}">${file.originalName}</h6>
+                            <p class="card-text small mb-2" style="color: var(--ios-text-secondary);">
+                                大小: ${formatFileSize(file.size)}
+                            </p>
+                            <p class="card-text small mb-2" style="color: var(--ios-text-secondary);">
+                                上传时间: ${formatDate(file.uploadTime)}
+                            </p>
+                            ${file.isPublic ? `<p class="card-text small mb-2" style="color: var(--ios-green);">公共路径: ${file.publicPath || '未设置'}</p>` : ''}
+                            ${file.accessCount ? `<p class="card-text small mb-0" style="color: var(--ios-blue);">访问次数: ${file.accessCount}</p>` : ''}
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="btn-group w-100" role="group">
+                                <button onclick="downloadFile('${file.id}')" class="btn btn-sm btn-outline-primary">下载</button>
+                                <button onclick="editFile('${file.id}')" class="btn btn-sm btn-outline-secondary">编辑</button>
+                                ${file.isPublic ? `
+                                    <button onclick="showStatistics('${file.id}')" class="btn btn-sm btn-outline-info">统计</button>
+                                    <button onclick="copyPublicPath('${file.id}')" class="btn btn-sm btn-outline-info">复制链接</button>
+                                ` : ''}
+                                <button onclick="deleteFile('${file.id}')" class="btn btn-sm btn-danger">删除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadPath = document.getElementById('uploadPath').value;
+            
+            if (!fileInput.files.length) {
+                alert('请选择文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            if (uploadPath) {
+                formData.append('uploadPath', uploadPath);
+            }
+
+            try {
+                const response = await fetch('/api/admin/upload-to-path', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('文件上传成功');
+                    fileInput.value = '';
+                    document.getElementById('uploadPath').value = '';
+                    showFiles();
+                } else {
+                    alert('上传失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('上传失败: ' + error.message);
+            }
+        }
+
+        async function downloadFile(id) {
+            try {
+                const response = await fetch(`/api/admin/files/${id}/download`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'download';
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (error) {
+                alert('下载失败');
+            }
+        }
+
+        async function editFile(id) {
+            try {
+                const response = await fetch(`/api/admin/files/${id}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                const file = data.file;
+                
+                document.getElementById('editFileId').value = file.id;
+                document.getElementById('editOriginalName').value = file.originalName;
+                document.getElementById('editIsPublic').value = file.isPublic ? 'true' : 'false';
+                document.getElementById('editPublicPath').value = file.publicPath || '';
+                
+                editModal.show();
+            } catch (error) {
+                alert('加载文件信息失败');
+            }
+        }
+
+        async function saveFileEdit() {
+            const id = document.getElementById('editFileId').value;
+            const originalName = document.getElementById('editOriginalName').value;
+            const isPublic = document.getElementById('editIsPublic').value === 'true';
+            const publicPath = document.getElementById('editPublicPath').value;
+
+            try {
+                const response = await fetch(`/api/admin/files/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ originalName, isPublic, publicPath })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    editModal.hide();
+                    loadFiles();
+                } else {
+                    alert('保存失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('保存失败: ' + error.message);
+            }
+        }
+
+        async function deleteFile(id) {
+            if (!confirm('确定要删除这个文件吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/files/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    loadFiles();
+                } else {
+                    alert('删除失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('删除失败: ' + error.message);
+            }
+        }
+
+        async function showStatistics(id) {
+            try {
+                const response = await fetch(`/api/admin/files/${id}/statistics`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                const stats = data.statistics;
+                
+                const trendClass = stats.trend === 'increasing' ? 'trend-up' : 
+                                   stats.trend === 'decreasing' ? 'trend-down' : 'trend-stable';
+                const trendText = stats.trend === 'increasing' ? '上升' : 
+                                  stats.trend === 'decreasing' ? '下降' : '稳定';
+
+                document.getElementById('statisticsContent').innerHTML = `
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">${stats.totalAccess}</h3>
+                                    <small>总访问次数</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">${stats.uniqueDays}</h3>
+                                    <small>活跃天数</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">${stats.averagePerDay}</h3>
+                                    <small>日均访问</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0 ${trendClass}">${trendText}</h3>
+                                    <small>访问趋势</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h6>每日访问统计</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>访问次数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Object.entries(stats.dailyStats).map(([date, count]) => `
+                                    <tr>
+                                        <td>${date}</td>
+                                        <td>${count}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                statisticsModal.show();
+            } catch (error) {
+                alert('加载统计信息失败');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN');
+        }
+
+        async function browseServerPath() {
+            const path = document.getElementById('serverPathInput').value;
+            if (!path) {
+                alert('请输入路径');
+                return;
+            }
+            try {
+                const response = await fetch(`/api/admin/server/browse?path=${encodeURIComponent(path)}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    renderServerFilesWithDirs(data.directories, data.files, data.currentPath);
+                } else {
+                    alert('浏览失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('浏览失败: ' + error.message);
+            }
+        }
+
+        function renderServerFiles(files, currentPath) {
+            const container = document.getElementById('serverFilesList');
+            if (!files || files.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted">该目录下没有文件</div>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card file-card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate" title="${file.name}">${file.name}</h6>
+                            <p class="card-text small text-muted mb-1">
+                                大小: ${formatFileSize(file.size)}
+                            </p>
+                            <p class="card-text small text-muted mb-1">
+                                路径: ${file.path}
+                            </p>
+                            <p class="card-text small text-info mb-1">
+                                状态: ${file.registered ? '已注册' : '未注册'}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            ${file.registered ? `
+                                <div class="btn-group w-100" role="group">
+                                    <button onclick="editFile('${file.fileId}')" class="btn btn-sm btn-outline-primary">管理</button>
+                                    <button onclick="downloadFile('${file.fileId}')" class="btn btn-sm btn-outline-secondary">下载</button>
+                                </div>
+                            ` : `
+                                <button onclick="showRegisterModal('${file.path}', '${file.name}')" class="btn btn-sm btn-success w-100">注册并设置公开访问</button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderServerFilesWithDirs(directories, files, currentPath) {
+            const container = document.getElementById('serverFilesList');
+            updateBreadcrumb(currentPath);
+
+            if ((!directories || directories.length === 0) && (!files || files.length === 0)) {
+                container.innerHTML = '<div class="col-12 text-center text-muted">该目录下没有文件和文件夹</div>';
+                return;
+            }
+
+            let html = '';
+
+            if (directories && directories.length > 0) {
+                directories.forEach(dir => {
+                    html += `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card file-card h-100" style="border-left: 4px solid var(--ios-orange);">
+                                <div class="card-body">
+                                    <h6 class="card-title text-truncate mb-3" title="${dir.name}">📁 ${dir.name}</h6>
+                                    <p class="card-text small mb-0" style="color: var(--ios-text-secondary);">
+                                        ${dir.path}
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="btn-group w-100" role="group">
+                                        <button onclick="navigateToDirectory('${dir.path}')" class="btn btn-sm btn-warning">进入</button>
+                                        <button onclick="showBatchSetAccessModal('${dir.path}', '${dir.name}')" class="btn btn-sm btn-success">批量设置</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (files && files.length > 0) {
+                files.forEach(file => {
+                    html += `
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card file-card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-truncate mb-3" title="${file.name}">📄 ${file.name}</h6>
+                                    <p class="card-text small mb-2" style="color: var(--ios-text-secondary);">
+                                        大小: ${formatFileSize(file.size)}
+                                    </p>
+                                    <p class="card-text small mb-2" style="color: var(--ios-text-secondary);">
+                                        ${file.path}
+                                    </p>
+                                    <p class="card-text small mb-0" style="color: ${file.registered ? 'var(--ios-green)' : 'var(--ios-gray)'};">
+                                        ${file.registered ? '✓ 已注册' : '○ 未注册'}
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    ${file.registered ? `
+                                        <div class="btn-group w-100" role="group">
+                                            <button onclick="editFile('${file.fileId}')" class="btn btn-sm btn-outline-primary">管理</button>
+                                            <button onclick="downloadFile('${file.fileId}')" class="btn btn-sm btn-outline-secondary">下载</button>
+                                            <button onclick="copyPublicPath('${file.fileId}')" class="btn btn-sm btn-outline-info">复制链接</button>
+                                        </div>
+                                    ` : `
+                                        <button onclick="showRegisterModal('${file.path}', '${file.name}')" class="btn btn-sm btn-success w-100">注册文件</button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function navigateToDirectory(path) {
+            document.getElementById('serverPathInput').value = path;
+            browseServerPath();
+        }
+
+        function updateBreadcrumb(currentPath) {
+            const breadcrumb = document.getElementById('pathBreadcrumb');
+            if (!currentPath) {
+                breadcrumb.innerHTML = '';
+                return;
+            }
+
+            const parts = currentPath.split('/').filter(p => p);
+            let html = '<li class="breadcrumb-item"><a href="#" onclick="navigateToDirectory(\'/\')">根目录</a></li>';
+            
+            let buildPath = '';
+            parts.forEach((part, index) => {
+                buildPath += '/' + part;
+                if (index === parts.length - 1) {
+                    html += `<li class="breadcrumb-item active" aria-current="page">${part}</li>`;
+                } else {
+                    html += `<li class="breadcrumb-item"><a href="#" onclick="navigateToDirectory('${buildPath}')">${part}</a></li>`;
+                }
+            });
+
+            breadcrumb.innerHTML = html;
+        }
+
+        function showRegisterModal(filePath, fileName) {
+            document.getElementById('registerFilePath').value = filePath;
+            document.getElementById('registerFileName').value = fileName;
+            registerModal.show();
+        }
+
+        async function registerServerFile() {
+            const filePath = document.getElementById('registerFilePath').value;
+            const fileName = document.getElementById('registerFileName').value;
+            const isPublic = document.getElementById('registerIsPublic').value === 'true';
+            const publicPath = document.getElementById('registerPublicPath').value;
+
+            try {
+                const response = await fetch('/api/admin/server/register', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ filePath, fileName, isPublic, publicPath })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('文件注册成功');
+                    registerModal.hide();
+                    browseServerPath();
+                } else {
+                    alert('注册失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('注册失败: ' + error.message);
+            }
+        }
+
+        function showBatchSetAccessModal(folderPath, folderName) {
+            document.getElementById('batchFolderPath').value = folderPath;
+            document.getElementById('batchFolderName').value = folderName;
+            batchSetAccessModal.show();
+        }
+
+        async function batchSetAccess() {
+            const folderPath = document.getElementById('batchFolderPath').value;
+            const isPublic = document.getElementById('batchIsPublic').value === 'true';
+            const publicPathPrefix = document.getElementById('batchPublicPathPrefix').value;
+            const recursive = document.getElementById('batchRecursive').value === 'true';
+            const overwrite = document.getElementById('batchOverwrite').value === 'true';
+
+            if (!publicPathPrefix) {
+                alert('请输入公共访问路径前缀');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/server/batch-set-access', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ folderPath, isPublic, publicPathPrefix, recursive, overwrite })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert(`批量设置成功！共处理 ${data.total} 个文件，成功 ${data.success} 个，失败 ${data.failed} 个`);
+                    batchSetAccessModal.hide();
+                    browseServerPath();
+                } else {
+                    alert('批量设置失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('批量设置失败: ' + error.message);
+            }
+        }
+
+        async function copyPublicPath(fileId) {
+            try {
+                const response = await fetch(`/api/admin/files/${fileId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                const file = data.file;
+                
+                if (file.isPublic && file.publicPath) {
+                    const protocol = window.location.protocol;
+                    const host = window.location.host;
+                    // 在公共路径后加上文件名
+                    const publicUrl = `${protocol}//${host}/public${file.publicPath}/${file.fileName}`;
+                    
+                    await navigator.clipboard.writeText(publicUrl);
+                    alert('访问链接已复制到剪贴板：\n' + publicUrl);
+                } else {
+                    alert('该文件未设置公开访问');
+                }
+            } catch (error) {
+                alert('复制失败: ' + error.message);
+            }
+        }
+
+        async function loadExtensionConfig() {
+            try {
+                const response = await fetch('/api/admin/extensions', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                renderExtensionConfig(data.config);
+            } catch (error) {
+                alert('加载后缀配置失败: ' + error.message);
+            }
+        }
+
+        function renderExtensionConfig(config) {
+            // 填充默认配置
+            document.getElementById('defaultType').value = config.default.type;
+            document.getElementById('defaultValue').value = config.default.value;
+
+            // 渲染后缀列表
+            const tbody = document.getElementById('extensionList');
+            if (Object.keys(config.extensions).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">暂无后缀配置</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = Object.entries(config.extensions).map(([ext, cfg]) => `
+                <tr>
+                    <td><code>.${ext}</code></td>
+                    <td>${cfg.type === 'file' ? '默认文件' : '跳转链接'}</td>
+                    <td class="text-truncate" style="max-width: 300px;" title="${cfg.value}">${cfg.value}</td>
+                    <td>
+                        <button onclick="deleteExtension('${ext}')" class="btn btn-sm btn-danger">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateDefaultConfig() {
+            const type = document.getElementById('defaultType').value;
+            const value = document.getElementById('defaultValue').value;
+
+            if (!value) {
+                alert('请输入处理值');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/extensions/default', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ type, value })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('默认配置更新成功');
+                    loadExtensionConfig();
+                } else {
+                    alert('更新失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('更新失败: ' + error.message);
+            }
+        }
+
+        function showAddExtensionModal() {
+            document.getElementById('addExtension').value = '';
+            document.getElementById('addExtensionType').value = 'file';
+            document.getElementById('addExtensionValue').value = '';
+            addExtensionModal.show();
+        }
+
+        async function addExtension() {
+            const extension = document.getElementById('addExtension').value.replace(/^\./, '');
+            const type = document.getElementById('addExtensionType').value;
+            const value = document.getElementById('addExtensionValue').value;
+
+            if (!extension || !value) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/extensions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ extension, type, value })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('后缀配置添加成功');
+                    addExtensionModal.hide();
+                    loadExtensionConfig();
+                } else {
+                    alert('添加失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('添加失败: ' + error.message);
+            }
+        }
+
+        async function deleteExtension(extension) {
+            if (!confirm(`确定要删除后缀 .${extension} 的配置吗？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/extensions/${extension}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    loadExtensionConfig();
+                } else {
+                    alert('删除失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('删除失败: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

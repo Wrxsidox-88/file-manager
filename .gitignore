@@ -1,0 +1,41 @@
+# 依赖
+node_modules/
+package-lock.json
+
+# 环境变量
+.env
+
+# 日志
+logs/
+*.log
+
+# 数据文件
+data/files.json
+data/extensionConfig.json
+
+# 上传文件
+upload/
+uploads/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 临时文件
+tmp/
+temp/
+*.tmp
+
+# 测试覆盖率
+coverage/
+
+# 构建产物
+dist/
+build/
