@@ -80,14 +80,16 @@ app.use('/api/files', createFileRoutes(config));
 app.use('/api/admin', createAdminRoutes(config, authMiddleware, extensionConfig));
 app.use('/public', createPublicRoutes(config, extensionConfig));
 
-// 捕获所有未匹配的路径，处理后缀配置
-app.use(async (req, res, next) => {
+// 处理后缀配置的中间件函数
+async function handleExtensionConfig(req, res) {
   try {
     const requestPath = req.path;
     const parts = requestPath.split('/').filter(p => p);
     
     if (parts.length === 0) {
-      return res.status(404).json({ error: '接口不存在' });
+      // 根路径使用默认配置
+      const defaultConfig = extensionConfig.getExtension('');
+      return handleConfigResponse(res, defaultConfig, requestPath, '');
     }
 
     // 提取后缀
@@ -96,32 +98,14 @@ app.use(async (req, res, next) => {
     
     const extConfig = extensionConfig.getExtension(extension);
     
-    logger.info('未匹配路径，使用后缀配置处理', {
+    logger.info('使用后缀配置处理路径', {
       requestPath,
       extension,
       config: extConfig,
       ip: req.ip
     });
 
-    if (extConfig.type === 'redirect') {
-      return res.redirect(extConfig.value);
-    } else if (extConfig.type === 'file') {
-      const fs = require('fs');
-      const filePath = path.join(process.cwd(), extConfig.value);
-      
-      if (fs.existsSync(filePath)) {
-        return res.sendFile(filePath);
-      } else {
-        logger.warn('默认文件不存在', { filePath });
-        return res.status(404).json({ error: '文件不存在' });
-      }
-    }
-    
-    logger.warn('未匹配路径且无后缀配置', {
-      requestPath,
-      ip: req.ip
-    });
-    res.status(404).json({ error: '接口不存在' });
+    return handleConfigResponse(res, extConfig, requestPath, extension);
   } catch (error) {
     logger.error('处理后缀配置失败', {
       path: req.path,
@@ -129,12 +113,41 @@ app.use(async (req, res, next) => {
     });
     res.status(500).json({ error: '服务器内部错误' });
   }
-});
+}
 
+// 根据配置类型返回响应
+function handleConfigResponse(res, config, requestPath, extension) {
+  if (!config) {
+    logger.warn('无有效的后缀配置', { requestPath, extension });
+    return res.status(404).json({ error: '接口不存在' });
+  }
+
+  if (config.type === 'redirect') {
+    logger.info('重定向到配置URL', { requestPath, redirectUrl: config.value });
+    return res.redirect(config.value);
+  } else if (config.type === 'file') {
+    const fs = require('fs');
+    const filePath = path.join(process.cwd(), config.value);
+    
+    if (fs.existsSync(filePath)) {
+      logger.info('返回配置文件', { requestPath, filePath });
+      return res.sendFile(filePath);
+    } else {
+      logger.warn('配置文件不存在', { filePath, requestPath });
+      return res.status(404).json({ error: '文件不存在' });
+    }
+  }
+  
+  logger.warn('未知的配置类型', { requestPath, configType: config.type });
+  return res.status(404).json({ error: '接口不存在' });
+}
+
+// 管理后台路由（必须在通配符路由之前）
 app.get(config.adminPath, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// 根路由
 app.get('/', (req, res) => {
   res.json({
     message: '文件资源管理 API',
@@ -152,6 +165,10 @@ app.get('/', (req, res) => {
   });
 });
 
+// 通配符路由 - 捕获所有未匹配的路径，处理后缀配置
+app.all('*', handleExtensionConfig);
+
+// 错误处理中间件（必须在最后）
 app.use((err, req, res, next) => {
   logger.error('服务器错误', {
     message: err.message,
@@ -162,15 +179,6 @@ app.use((err, req, res, next) => {
   });
   console.error(err.stack);
   res.status(500).json({ error: '服务器内部错误: ' + err.message });
-});
-
-app.use((req, res) => {
-  logger.warn('接口不存在', {
-    path: req.path,
-    method: req.method,
-    ip: req.ip
-  });
-  res.status(404).json({ error: '接口不存在' });
 });
 
 if (require.main === module) {

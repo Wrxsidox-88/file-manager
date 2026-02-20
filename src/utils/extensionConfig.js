@@ -44,10 +44,16 @@ class ExtensionConfig {
   }
 
   getExtension(extension) {
+    // 处理空后缀或无后缀的情况，直接返回默认配置
+    if (!extension || extension === '') {
+      return this.config.default;
+    }
+    
     const ext = extension.toLowerCase();
     if (this.config.extensions[ext]) {
       return this.config.extensions[ext];
     }
+    // 没有找到特定后缀配置，返回默认配置
     return this.config.default;
   }
 

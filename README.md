@@ -126,18 +126,24 @@ npm start
 
 ### 后缀配置
 
-后缀配置允许为不同文件后缀设置默认处理方式：
+后缀配置允许为不同文件后缀设置默认处理方式，系统会自动捕获所有未匹配的路径并根据后缀配置进行响应。
 
 **配置类型：**
 - `file` - 返回指定的默认文件
 - `redirect` - 重定向到指定 URL
+
+**路径覆盖功能：**
+- 系统使用通配符路由 (`app.all('*')`) 捕获所有未匹配的路径
+- 根据路径的文件后缀查找对应配置
+- 如果没有特定后缀配置，使用默认配置
+- 支持无后缀路径（自动使用默认配置）
 
 **配置示例：**
 ```json
 {
   "default": {
     "type": "file",
-    "value": "404.html"
+    "value": "public/404.html"
   },
   "extensions": {
     "html": {
@@ -147,10 +153,20 @@ npm start
     "jpg": {
       "type": "redirect",
       "value": "https://example.com/default-image.jpg"
+    },
+    "pdf": {
+      "type": "file",
+      "value": "public/default.pdf"
     }
   }
 }
 ```
+
+**工作原理：**
+1. 访问 `/unknown-page.html` → 检查 `.html` 后缀 → 返回 `public/404.html`
+2. 访问 `/unknown-page` → 无后缀 → 使用默认配置 → 返回 `public/404.html`
+3. 访问 `/folder/subfolder/file.jpg` → 检查 `.jpg` 后缀 → 重定向到默认图片
+4. 访问 `/api/unknown` → 被 API 路由处理 → 返回 JSON 错误响应
 
 ## API 文档
 
